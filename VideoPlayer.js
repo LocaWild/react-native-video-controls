@@ -38,7 +38,7 @@ export default class VideoPlayer extends Component {
             lastScreenPress: 0,
             volumeFillWidth: 0,
             seekerFillWidth: 0,
-            showControls: true,
+            showControls: false,
             volumePosition: 0,
             seekerPosition: 0,
             volumeOffset: 0,
@@ -103,11 +103,11 @@ export default class VideoPlayer extends Component {
         this.animations = {
             bottomControl: {
                 marginBottom: new Animated.Value( 0 ),
-                opacity: new Animated.Value( 1 ),
+                opacity: new Animated.Value( 0 ),
             },
             topControl: {
                 marginTop: new Animated.Value( 0 ),
-                opacity: new Animated.Value( 1 ),
+                opacity: new Animated.Value( 0 ),
             },
             video: {
                 opacity: new Animated.Value( 1 ),
@@ -193,7 +193,9 @@ export default class VideoPlayer extends Component {
      * Either close the video or go to a
      * new page.
      */
-    _onEnd() {}
+    _onEnd() {
+      this.setState({ paused: true });
+    }
 
     /**
      * Set the error state to true which then
@@ -280,18 +282,18 @@ export default class VideoPlayer extends Component {
                 this.animations.topControl.opacity,
                 { toValue: 0 }
             ),
-            Animated.timing(
-                this.animations.topControl.marginTop,
-                { toValue: -100 }
-            ),
+            // Animated.timing(
+            //     this.animations.topControl.marginTop,
+            //     { toValue: -100 }
+            // ),
             Animated.timing(
                 this.animations.bottomControl.opacity,
                 { toValue: 0 }
             ),
-            Animated.timing(
-                this.animations.bottomControl.marginBottom,
-                { toValue: -100 }
-            ),
+            // Animated.timing(
+            //     this.animations.bottomControl.marginBottom,
+            //     { toValue: -100 }
+            // ),
         ]).start();
     }
 
@@ -971,6 +973,52 @@ export default class VideoPlayer extends Component {
     }
 
     /**
+     * Show center play button and children
+     */
+    renderOverlay() {
+        if (this.state.paused && !this.state.loading && !this.state.showControls) {
+            const { children } = this.props;
+
+            return (
+                <View style={[ styles.loader.container, { zIndex: 5}] }>
+                  <TouchableHighlight
+                    onPress={() => {
+                      this.methods.togglePlayPause();
+                      this.methods.toggleControls();
+                    }}
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 80,
+                      height: 80,
+                      borderRadius: 40,
+                      borderWidth: 2,
+                      borderColor: 'white',
+                    }}
+                  >
+                    <Image
+                      source={require('./assets/img/play.png')}
+                      style={{
+                        width: 20,
+                        height: 40,
+                        resizeMode: 'contain',
+                      }}
+                    />
+                  </TouchableHighlight>
+                <View
+                  style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0}}
+                  pointerEvents="box-none"
+                >
+                  {children}
+                </View>
+                {this.renderUploadProgress()}
+              </View>
+            );
+        }
+        return null;
+    }
+
+    /**
      * Show loading icon
      */
     renderLoader() {
@@ -1003,6 +1051,16 @@ export default class VideoPlayer extends Component {
                 </View>
             );
         }
+        return null;
+    }
+
+    renderUploadProgress() {
+        const { uploadProgress, progressBar } = this.props;
+
+        if (uploadProgress && _.inRange(uploadProgress, 2)) {
+            return (progressBar);
+        }
+
         return null;
     }
 
@@ -1042,6 +1100,7 @@ export default class VideoPlayer extends Component {
                     { this.renderError() }
                     { this.renderTopControls() }
                     { this.renderLoader() }
+                    { this.renderOverlay() }
                     { this.renderBottomControls() }
                 </View>
             </TouchableWithoutFeedback>
