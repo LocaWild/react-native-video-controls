@@ -627,6 +627,12 @@ export default class VideoPlayer extends Component {
         this.setState( state );
     }
 
+    componentWillReceiveProps(nextProps) {
+      if (this.props.isVideoPlayable && !nextProps.isVideoPlayable) {
+        this.setState({ paused: true });
+      }
+    }
+
     /**
      * When the component is about to unmount kill the
      * timeout less it fire in the prev/next scene
@@ -1070,7 +1076,7 @@ export default class VideoPlayer extends Component {
     render() {
         return (
             <TouchableWithoutFeedback
-                onPress={ this.events.onScreenPress }
+                onPress={ this.methods.togglePlayPause }
                 style={[ styles.player.container, this.styles.containerStyle ]}
             >
                 <View style={[ styles.player.container, this.styles.containerStyle ]}>
@@ -1098,10 +1104,10 @@ export default class VideoPlayer extends Component {
                         source={ this.props.source }
                     />
                     { this.renderError() }
-                    { this.renderTopControls() }
+                    { /* this.renderTopControls() */ }
                     { this.renderLoader() }
                     { this.renderOverlay() }
-                    { this.renderBottomControls() }
+                    { /* this.renderBottomControls() */ }
                 </View>
             </TouchableWithoutFeedback>
         );
